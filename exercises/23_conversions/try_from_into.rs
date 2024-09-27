@@ -14,6 +14,10 @@ struct Color {
     blue: u8,
 }
 
+fn is_u8(x: i16) -> bool {
+    u8::MIN as i16 <= x && x <= u8::MAX as i16
+}
+
 // We will use this error type for the `TryFrom` conversions.
 #[derive(Debug, PartialEq)]
 enum IntoColorError {
@@ -28,14 +32,28 @@ enum IntoColorError {
 impl TryFrom<(i16, i16, i16)> for Color {
     type Error = IntoColorError;
 
-    fn try_from(tuple: (i16, i16, i16)) -> Result<Self, Self::Error> {}
+    fn try_from(tuple: (i16, i16, i16)) -> Result<Self, Self::Error> {
+        match tuple {
+            (r, g, b) if !is_u8(r) || !is_u8(g) || !is_u8(b) => {
+                Err(IntoColorError::IntConversion)
+            },
+            (r, g, b) => Ok(Self { red: r as u8, green: g as u8, blue: b as u8 })
+        }
+    }
 }
 
 // TODO: Array implementation.
 impl TryFrom<[i16; 3]> for Color {
     type Error = IntoColorError;
 
-    fn try_from(arr: [i16; 3]) -> Result<Self, Self::Error> {}
+    fn try_from(arr: [i16; 3]) -> Result<Self, Self::Error> {
+        match arr {
+            [r, g, b] if !is_u8(r) || !is_u8(g) || !is_u8(b) => {
+                Err(IntoColorError::IntConversion)
+            }
+            [r, g, b] => Ok(Self { red: r as u8, green: g as u8, blue: b as u8})
+        }
+    }
 }
 
 // TODO: Slice implementation.
@@ -43,7 +61,15 @@ impl TryFrom<[i16; 3]> for Color {
 impl TryFrom<&[i16]> for Color {
     type Error = IntoColorError;
 
-    fn try_from(slice: &[i16]) -> Result<Self, Self::Error> {}
+    fn try_from(slice: &[i16]) -> Result<Self, Self::Error> {
+        match slice {
+            [r, g, b] if !is_u8(*r) || !is_u8(*g) || !is_u8(*b) => {
+                Err(IntoColorError::IntConversion)
+            }
+            [r, g, b] => Ok(Self { red: *r as u8, green: *g as u8, blue: *b as u8}),
+            _ => Err(IntoColorError::BadLen)
+        }
+    }
 }
 
 fn main() {
